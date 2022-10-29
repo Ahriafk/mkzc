@@ -1,0 +1,17 @@
+{
+  "name": "this-one",
+  "version": "1.0.0",
+  "description": "MKZC bot (by dav) in node.js using discord.js v13",
+  "main": "mk.js",
+  "scripts": {
+    "test": "node mk.js"
+  },
+  "author": "dav ft. ByAhri",
+  "license": "ISC",
+  "dependencies": {
+    "axios": "^1.1.3",
+    "colors": "^1.4.0",
+    "discord.js": "^13.12.0",
+    "dotenv": "^16.0.3"
+  }
+}
