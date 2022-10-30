@@ -1,5 +1,7 @@
 const discord = require("discord.js");
 const dotnev = require("dotenv");
+const wait = require('node:timers/promises').setTimeout;
+const axios = require("axios");
 dotnev.config();
 require("colors");
 
@@ -76,11 +78,69 @@ client.on("messageCreate", async (message) => { // messageCreate event, es un ev
                 //al final enviaremos el embed
                 message.channel.send({ embeds: [mkzcEmbed]}).catch(console.error);
             }
-            // siguiente comando, 
-        }
+            // siguiente comando, saludar
+            if (commandName === "saludar") {
+                const member = message.mentions.members.first() || message.member;
+                // ahora haremos una constante que tendra un array `[]` con posibles outputs que seran strings "" que enviara el bot al usar el comando para mas variedad
+                // luego haremos un simple calculo para escoger de manera aleatoria esas opciones y enviarlas 
+                const options = [
+                    `Kfue ${member.displayName}, ¿Cómo es?`,
+                    `¿Todo bien? ${member.displayName}`,
+                    `Como esta la cosa ${member.displayName}`
+                ]
+                const mathOptions = Math.floor(Math.random() * options.length);
+                //luego usaremos un metodo sencillo para hacer que el bot aparezca escribiendo en el chat para una respuesta mas natural
+                //utilizando al mismo tiempo "wait" function, permitiendo esperar para ejecutar alguna cosa. primero hay que definirlo asi para usarlo const wait = require('node:timers/promises').setTimeout;
+                // pondre esto al principio del codigo
+                // ahora si podemos usar wait, en node.js los tiempos estan expresados en ms, miliseconds, por eso me gusta definir el tiempo asi, 15 * 1000 = serian 15 segundos. o solamente escribir 15000
+                await wait(500)
+                await message.channel.sendTyping() // la funcion sendTyping se usa para que el bot escriba, se detrendra cuando el bot envie su mensaje o cuando pasen varios segundos
+                await wait(1000) // otro wait para que aparezca escribiendo... por 1 segundo
+                message.channel.send({ content: `${options[mathOptions]}`}).catch(console.error);
+            }
+            if (commandName === "joke") {
+                // en este comando haremos API calls, basicamente es hacer un request a una plataforma y nos dara una respuesta
+                // axios es muy buen modulo para hacer api calls, muchos api calls no requieren autorizacion pero muchas si las requieren
+                // es importante leer la documentacion de la plataforma en la que usaremos su API para saber como hay que pedir autorizacion y demas.
+                // con esta plataforma necesitamos autorizacion y lo haremos de la siguiente manera
+                const res = await axios.get(`https://api.humorapi.com/jokes/random?max-length=450`, { //este url podemos agregar queries o parameters para filtrar nuestro request, el link base es https://api.humorapi.com/jokes/random
+                    headers: {
+                        "x-api-key": "324e656acdd148dca3bdfe70a63e252d" // esta es la api key del sitio, tuve que iniciar sesion y te dan tu api key
+                    }
+                });
+                console.log(res.data) // este log es un ejemplo de el data que nos dara el request, casi siempre se usa data, luego se usara lo que queremos obtener, casi siemp respuestas seran en form JSON
+                console.log(res.data.joke) // en este caso queremos encontrar "joke", entonces usamos res.data.joke
+                const joke = res.data.joke
+                message.channel.send({
+                    embeds: [
+                        new discord.MessageEmbed()
+                        .setColor("GREEN")
+                        .setDescription(joke)
+                    ]
+                });
+            }
+            // ahora haremos memes comando, usaremos lo mismo que antes pero enviaremos una foto, un meme
+            if (commandName === "meme") {
+                const res = await axios.get(`https://api.humorapi.com/memes/random?`, {
+                    headers: {
+                        "x-api-key": "324e656acdd148dca3bdfe70a63e252d"
+                    }
+                });
+                console.log(res.data)
+                console.log(res.data.url)
+                const meme = res.data.url
+                message.channel.send({
+                    embeds: [
+                        new discord.MessageEmbed()
+                        .setColor("GREEN")
+                        .setImage(meme)
+                    ]
+                });
+            }
+        };
     } catch (error) {
         console.error(error);
-    }
+    };
 });
 
 
